@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiyara Botanics × AI WhatsApp Agent — Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF6F0;
+    --sage: #7A8C6E;
+    --sage-light: #B5C4A8;
+    --bark: #5C4A35;
+    --bark-light: #8B7355;
+    --blush: #E8D5C4;
+    --blush-deep: #D4B49A;
+    --white: #FFFFFF;
+    --text: #2C2416;
+    --text-muted: #7A6E5F;
+    --wa-green: #25D366;
+    --wa-dark: #075E54;
+    --wa-bubble: #DCF8C6;
+    --wa-bg: #ECE5DD;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--bark) 0%, #3A2A1A 60%, var(--sage) 100%);
+    color: var(--cream);
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(181,196,168,0.12);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232,213,196,0.08);
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(181,196,168,0.25);
+    border: 1px solid rgba(181,196,168,0.4);
+    color: var(--sage-light);
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .hero h1 span { color: var(--sage-light); font-style: italic; }
+  .hero-sub {
+    font-size: 13px;
+    color: rgba(250,246,240,0.6);
+    letter-spacing: 0.5px;
+    margin-bottom: 30px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--sage-light);
+    display: block;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(250,246,240,0.55);
+  }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    background: var(--white);
+    border-bottom: 1px solid var(--blush);
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(92,74,53,0.08);
+  }
+  .tab {
+    flex: 1;
+    min-width: 90px;
+    padding: 14px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--bark);
+    border-bottom-color: var(--sage);
+    background: rgba(122,140,110,0.04);
+  }
+  .tab-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  /* SECTIONS */
+  .section { display: none; padding: 28px 20px; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--bark);
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  /* WHATSAPP CHAT SIMULATOR */
+  .wa-phone {
+    max-width: 360px;
+    margin: 0 auto;
+    background: var(--wa-bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(92,74,53,0.2);
+  }
+  .wa-header {
+    background: var(--wa-dark);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wa-avatar {
+    width: 36px; height: 36px;
+    background: var(--sage);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .wa-name { color: white; font-size: 14px; font-weight: 500; }
+  .wa-status { color: rgba(255,255,255,0.6); font-size: 11px; }
+  .wa-body {
+    padding: 16px 12px;
+    min-height: 420px;
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    animation: msgIn 0.3s ease;
+  }
+  @keyframes msgIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .msg.bot {
+    background: var(--white);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    color: var(--text);
+  }
+  .msg.user {
+    background: var(--wa-bubble);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+    color: var(--text);
+  }
+  .msg-time { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-align: right; }
+
+  .wa-options {
+    padding: 8px 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .wa-btn {
+    background: white;
+    border: 1px solid var(--sage);
+    color: var(--sage);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .wa-btn:hover { background: var(--sage); color: white; }
+
+  .flow-label {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 12px;
+  }
+  .flow-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .flow-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--blush-deep);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .flow-dot.active { background: var(--sage); transform: scale(1.3); }
+
+  /* SETUP REQUIREMENTS */
+  .req-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--sage);
+    box-shadow: 0 2px 12px rgba(92,74,53,0.06);
+  }
+  .req-card.warn { border-left-color: #E6A817; }
+  .req-card.easy { border-left-color: var(--wa-green); }
+  .req-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .req-icon { font-size: 22px; }
+  .req-title { font-size: 15px; font-weight: 500; color: var(--bark); }
+  .req-badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .badge-easy { background: #E6F9EE; color: #1A7A40; }
+  .badge-med { background: #FEF3CD; color: #8A6000; }
+  .badge-handled { background: #E8F0FE; color: #1A4ED8; }
+  .req-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+  .req-body li { margin-left: 16px; margin-bottom: 4px; }
+
+  /* PRICING */
+  .pricing-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .price-card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    border: 1.5px solid var(--blush);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(92,74,53,0.06);
+  }
+  .price-card.featured {
+    border-color: var(--sage);
+    background: linear-gradient(135deg, #F0F4EE 0%, white 100%);
+  }
+  .featured-badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--sage);
+    color: white;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .plan-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--bark);
+    margin-bottom: 4px;
+  }
+  .plan-price {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--bark);
+    margin-bottom: 2px;
+  }
+  .plan-price span { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+  .plan-setup { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  .plan-features { list-style: none; }
+  .plan-features li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--blush);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .plan-features li:last-child { border-bottom: none; }
+  .check { color: var(--sage); font-size: 14px; }
+  .cross { color: #CCC; font-size: 14px; }
+
+  .pricing-note {
+    background: linear-gradient(135deg, var(--bark) 0%, #3A2A1A 100%);
+    color: var(--cream);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .pricing-note strong { color: var(--sage-light); }
+
+  /* AUTOMATION FLOWS */
+  .flow-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(92,74,53,0.06);
+  }
+  .flow-header {
+    background: linear-gradient(135deg, var(--bark), #3A2A1A);
+    color: var(--cream);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .flow-icon { font-size: 24px; }
+  .flow-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; }
+  .flow-subtitle { font-size: 11px; color: rgba(250,246,240,0.6); margin-top: 2px; }
+  .flow-steps { padding: 20px; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content {}
+  .step-title { font-size: 13px; font-weight: 500; color: var(--bark); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+  .step-msg {
+    background: var(--wa-bubble);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    margin-top: 6px;
+    line-height: 1.5;
+    border-left: 3px solid var(--wa-green);
+  }
+  .connector {
+    width: 2px;
+    height: 16px;
+    background: var(--blush-deep);
+    margin: -8px 0 -8px 13px;
+  }
+
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, var(--bark) 0%, #2A1A0A 50%, var(--sage) 100%);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--cream);
+    margin-top: 10px;
+  }
+  .cta-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    margin-bottom: 10px;
+  }
+  .cta-section p { font-size: 13px; color: rgba(250,246,240,0.65); margin-bottom: 24px; line-height: 1.7; }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--wa-green);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(37,211,102,0.35);
+    transition: all 0.2s;
+  }
+  .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,211,102,0.45); }
+  .dev-tag {
+    margin-top: 24px;
+    font-size: 11px;
+    color: rgba(250,246,240,0.4);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Confidential Prototype · Kiyara Botanics</div>
+  <h1>WhatsApp <span>AI Agent</span><br>for Kiyara</h1>
+  <p class="hero-sub">Prepared by Dev Jariwala · Fixera Automation · Surat</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">Auto Replies</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Key Flows</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">0</span>
+      <span class="stat-label">Manual Effort</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flow')">
+    <span class="tab-icon">💬</span>Skin Quiz
+  </div>
+  <div class="tab" onclick="showTab('setup')">
+    <span class="tab-icon">⚙️</span>Setup
+  </div>
+  <div class="tab" onclick="showTab('pricing')">
+    <span class="tab-icon">💰</span>Pricing
+  </div>
+  <div class="tab" onclick="showTab('automation')">
+    <span class="tab-icon">🔄</span>Automations
+  </div>
+</div>
+
+<!-- TAB 1: RECOMMENDATION FLOW -->
+<div id="tab-flow" class="section active">
+  <p class="section-title">Skin Recommendation Flow</p>
+  <p class="section-desc">A customer messages Kiyara's WhatsApp. The AI asks 3 simple questions and recommends the perfect product — instantly, every time.</p>
+
+  <div class="wa-phone">
+    <div class="wa-header">
+      <div class="wa-avatar">🌿</div>
+      <div>
+        <div class="wa-name">Kiyara Botanics</div>
+        <div class="wa-status">AI Assistant · Online</div>
+      </div>
+    </div>
+    <div class="wa-body" id="chatBody">
+      <!-- Messages injected by JS -->
+    </div>
+    <div class="wa-options" id="chatOptions"></div>
+  </div>
+
+  <div class="flow-label">Tap an option to experience the flow</div>
+  <div class="flow-nav" id="flowNav"></div>
+</div>
+
+<!-- TAB 2: SETUP REQUIREMENTS -->
+<div id="tab-setup" class="section">
+  <p class="section-title">Setup Requirements</p>
+  <p class="section-desc">Here's exactly what Kiyara Botanics needs to provide, and what we handle on our end.</p>
+
+  <div class="req-card easy">
+    <div class="req-header">
+      <span class="req-icon">📱</span>
+      <span class="req-title">WhatsApp Business Number</span>
+      <span class="req-badge badge-easy">You provide</span>
+    </div>
+    <div class="req-body">
+      A dedicated WhatsApp number for Kiyara Botanics (can be an existing business number). We register it with the WhatsApp Business API.
+      <br><br>
+      <strong>What you need:</strong>
+      <ul>
+        <li>A phone number (can be a new SIM)</li>
+        <li>Facebook Business Manager account</li>
+        <li>GST/Business registration document</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="req-card easy">
+    <div class="req-header">
+      <span class="req-icon">🛍️</span>
+      <span class="req-title">Product Catalogue</span>
+      <span class="req-badge badge-easy">You provide</span>
+    </div>
+    <div class="req-body">
+      A simple list of your current products with names, key ingredients, skin concerns they address, and prices. Even a basic spreadsheet works.
+    </div>
+  </div>
+
+  <div class="req-card">
+    <div class="req-header">
+      <span class="req-icon">🔗</span>
+      <span class="req-title">Order/Store Integration</span>
+      <span class="req-badge badge-handled">We handle</span>
+    </div>
+    <div class="req-body">
+      We connect the AI to your existing store (Shopify, WooCommerce, or a custom site) to pull order data for repeat order nudges and abandoned cart recovery. No dev work needed from your side.
+    </div>
+  </div>
+
+  <div class="req-card warn">
+    <div class="req-header">
+      <span class="req-icon">⏱️</span>
+      <span class="req-title">Go-Live Timeline</span>
+      <span class="req-badge badge-med">7–10 Days</span>
+    </div>
+    <div class="req-body">
+      From documentation to live deployment:
+      <ul>
+        <li>Day 1–2: WhatsApp API setup & approval</li>
+        <li>Day 3–5: AI training on Kiyara's products</li>
+        <li>Day 6–7: Flow testing & refinement</li>
+        <li>Day 8–10: Go live + monitoring</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: PRICING -->
+<div id="tab-pricing" class="section">
+  <p class="section-title">Investment & Pricing</p>
+  <p class="section-desc">Transparent pricing. No hidden costs. Cancel anytime after 3 months.</p>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">₹10,000 <span>/ month</span></div>
+      <div class="plan-setup">+ ₹15,000 one-time setup</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Skin concern quiz + recommendation</li>
+        <li><span class="check">✓</span> Basic customer query handling</li>
+        <li><span class="check">✓</span> Up to 500 conversations/month</li>
+        <li><span class="cross">✗</span> Abandoned cart recovery</li>
+        <li><span class="cross">✗</span> Repeat order automation</li>
+      </ul>
+    </div>
+
+    <div class="price-card featured">
+      <div class="featured-badge">Recommended</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-price">₹18,000 <span>/ month</span></div>
+      <div class="plan-setup">+ ₹30,000 one-time setup</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Skin concern quiz + recommendation</li>
+        <li><span class="check">✓</span> Full customer query handling</li>
+        <li><span class="check">✓</span> Abandoned cart recovery</li>
+        <li><span class="check">✓</span> Repeat order nudges (Day 25–30)</li>
+        <li><span class="check">✓</span> Up to 2,000 conversations/month</li>
+        <li><span class="check">✓</span> Monthly performance report</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="pricing-note">
+    <strong>WhatsApp API cost</strong> is separate — typically ₹0.35–₹0.70 per conversation depending on message type (charged by Meta, not us). For a brand at Kiyara's stage, this usually adds ₹1,500–₹3,000/month depending on volume.
+    <br><br>
+    <strong>Minimum commitment:</strong> 3 months. After that, cancel anytime — just send a written notice <strong>30 days before</strong> your next billing date and we'll wrap things up cleanly. No questions asked.
+  </div>
+</div>
+
+<!-- TAB 4: AUTOMATIONS -->
+<div id="tab-automation" class="section">
+  <p class="section-title">Automation Flows</p>
+  <p class="section-desc">Two intelligent flows that run 24/7 without any manual effort from your team.</p>
+
+  <!-- Abandoned Cart -->
+  <div class="flow-card">
+    <div class="flow-header">
+      <div class="flow-icon">🛒</div>
+      <div>
+        <div class="flow-title">Abandoned Cart Recovery</div>
+        <div class="flow-subtitle">Triggers when a customer adds to cart but doesn't purchase</div>
+      </div>
+    </div>
+    <div class="flow-steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Trigger: Cart abandoned for 1 hour</div>
+          <div class="step-desc">System detects the customer left without purchasing and queues a WhatsApp message.</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Friendly first reminder (1 hr)</div>
+          <div class="step-msg">Hey! 👋 You left something behind at Kiyara Botanics. Your cart is saved — complete your order whenever you're ready: [link]</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Value nudge (24 hrs — if no purchase)</div>
+          <div class="step-msg">Still thinking? 🌿 Our HyaluCera™ formula is dermatologist-approved and fragrance-free — perfect for sensitive skin. Free shipping on orders above ₹599. [link]</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Final offer (48 hrs — optional)</div>
+          <div class="step-msg">Last chance! Use code KIYARA10 for 10% off your first order. Offer expires tonight. 🌙 [link]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repeat Order -->
+  <div class="flow-card">
+    <div class="flow-header">
+      <div class="flow-icon">🔄</div>
+      <div>
+        <div class="flow-title">Repeat Order Nudge</div>
+        <div class="flow-subtitle">Triggers 25–30 days after a purchase (product running low)</div>
+      </div>
+    </div>
+    <div class="flow-steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Trigger: 25 days after last order</div>
+          <div class="step-desc">System identifies the product purchased and calculates reorder timing based on typical usage cycle.</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Personal check-in message</div>
+          <div class="step-msg">Hi [Name]! 🌿 Hope your skin has been loving the Kiyara Hydrating Serum. Most customers run out around day 28 — want to reorder before you run out? [link]</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Customer responds: Yes / Not yet</div>
+          <div class="step-desc">If Yes → direct payment/order link sent. If Not yet → AI notes it and follows up in 5 days. No spam.</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Post-purchase: ask for review</div>
+          <div class="step-msg">So glad you reordered! 💚 If you've been loving Kiyara, a quick Google review would mean the world to us: [link]. Takes 30 seconds!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Ready to go live,<br><em>Dayal?</em></h2>
+  <p>This prototype is built specifically for Kiyara Botanics.<br>We can have the full system live in 7–10 days.</p>
+  <a href="https://wa.me/9824155101" class="cta-btn">💬 Chat with Dev on WhatsApp</a>
+  <div class="dev-tag">DEV JARIWALA · FIXERA AUTOMATION · SURAT</div>
+</div>
+
+<script>
+  // TAB SWITCHING
+  function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.closest('.tab').classList.add('active');
+  }
+
+  // CHAT FLOW
+  const flows = [
+    {
+      label: "Skin Concern Quiz",
+      messages: [
+        { type: 'bot', text: "🌿 Welcome to Kiyara Botanics! I'm your personal skincare assistant.\n\nWhat's your main skin concern?" },
+      ],
+      options: ["Pigmentation / Dark spots", "Acne / Breakouts", "Dryness / Hydration", "Sensitive skin"]
+    },
+    {
+      label: "After: Pigmentation selected",
+      messages: [
+        { type: 'bot', text: "🌿 Welcome to Kiyara Botanics! I'm your personal skincare assistant.\n\nWhat's your main skin concern?" },
+        { type: 'user', text: "Pigmentation / Dark spots" },
+        { type: 'bot', text: "Got it! For pigmentation, skin type matters a lot.\n\nHow would you describe your skin?" },
+      ],
+      options: ["Oily skin", "Dry skin", "Combination skin", "Sensitive skin"]
+    },
+    {
+      label: "After: Oily skin selected",
+      messages: [
+        { type: 'bot', text: "🌿 Welcome to Kiyara Botanics! I'm your personal skincare assistant.\n\nWhat's your main skin concern?" },
+        { type: 'user', text: "Pigmentation / Dark spots" },
+        { type: 'bot', text: "Got it! How would you describe your skin?" },
+        { type: 'user', text: "Oily skin" },
+        { type: 'bot', text: "✨ Perfect match found!\n\nBased on your skin, I recommend:\n\n*Kiyara Vitamin C Brightening Serum*\n🌿 With Niacinamide + HyaluCera™\n💧 Lightweight, non-greasy\n⭐ Clinically tested for Indian skin\n\n*₹899* — Free shipping above ₹599\n\n👇 Ready to order?" },
+      ],
+      options: ["Order now 🛍️", "Tell me more", "See other products", "Talk to a human"]
+    },
+    {
+      label: "After: Order now selected",
+      messages: [
+        { type: 'bot', text: "🌿 Welcome to Kiyara Botanics! I'm your personal skincare assistant.\n\nWhat's your main skin concern?" },
+        { type: 'user', text: "Pigmentation / Dark spots" },
+        { type: 'bot', text: "Got it! How would you describe your skin?" },
+        { type: 'user', text: "Oily skin" },
+        { type: 'bot', text: "✨ Perfect match found!\n\nI recommend: *Kiyara Vitamin C Brightening Serum* — ₹899\n\nReady to order?" },
+        { type: 'user', text: "Order now 🛍️" },
+        { type: 'bot', text: "🎉 Great choice!\n\nHere's your direct order link:\n👉 kiyarabotanics.com/buy/vc-serum\n\nYou'll receive order confirmation + tracking here on WhatsApp.\n\nAny questions? I'm always here! 💚" },
+      ],
+      options: []
+    }
+  ];
+
+  let currentFlow = 0;
+
+  function renderFlow(index) {
+    const flow = flows[index];
+    const body = document.getElementById('chatBody');
+    const optionsEl = document.getElementById('chatOptions');
+
+    body.innerHTML = '';
+    optionsEl.innerHTML = '';
+
+    flow.messages.forEach((msg, i) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'msg ' + msg.type;
+        div.innerHTML = msg.text.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+        const time = document.createElement('div');
+        time.className = 'msg-time';
+        time.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        div.appendChild(time);
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+      }, i * 150);
+    });
+
+    setTimeout(() => {
+      flow.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'wa-btn';
+        btn.textContent = opt;
+        btn.onclick = () => {
+          if (currentFlow < flows.length - 1) {
+            currentFlow++;
+            renderFlow(currentFlow);
+            updateDots();
+          }
+        };
+        optionsEl.appendChild(btn);
+      });
+    }, flow.messages.length * 150 + 100);
+
+    updateDots();
+  }
+
+  function updateDots() {
+    const nav = document.getElementById('flowNav');
+    nav.innerHTML = '';
+    flows.forEach((f, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'flow-dot' + (i === currentFlow ? ' active' : '');
+      dot.onclick = () => { currentFlow = i; renderFlow(i); };
+      dot.title = f.label;
+      nav.appendChild(dot);
+    });
+  }
+
+  renderFlow(0);
+</script>
+</body>
+</html>
